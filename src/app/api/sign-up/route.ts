@@ -1,7 +1,8 @@
+// src/app/api/users/signup/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import UserModel from "@/models/User";
 import dbConnect from "@/lib/dbConnect";
-import bcryptjs from "bcryptjs";
+import bcryptjs from 'bcryptjs';
 import { sendVerificationEmail } from "@/helpers/sendEmail";
 
 // Function to generate a 6-digit OTP securely
@@ -50,7 +51,18 @@ export async function POST(request: NextRequest) {
         await existingUserByEmail.save();
 
         // Send verification email
-        await sendVerificationEmail(username, email, verifyCode);
+        const emailresponse = await sendVerificationEmail(email, verifyCode, username);
+        console.log(emailresponse);
+
+        if (!emailresponse.success) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: "Failed to send verification email",
+            },
+            { status: 500 }
+          );
+        }
 
         return NextResponse.json(
           { success: true, message: "Verification email resent" },
@@ -75,25 +87,28 @@ export async function POST(request: NextRequest) {
       });
 
       const savedUser = await newUser.save();
-      console.log(savedUser)
+      console.log(savedUser);
 
       // Send verification email
-      const emailresponse=await sendVerificationEmail(username, email, verifyCode);
-      if(!emailresponse){
-        return NextResponse.json({
+      const emailresponse = await sendVerificationEmail(email, verifyCode, username);
+      console.log(emailresponse);
+
+      if (!emailresponse.success) {
+        return NextResponse.json(
+          {
             success: false,
             message: "Failed to send verification email",
-            },
-            { status: 500 }
-            ); 
-        }
-      
+          },
+          { status: 500 }
+        );
+      }
 
       return NextResponse.json(
         { success: true, message: "User created successfully. Verification email sent." },
         { status: 201 } // Created
       );
     }
+
   } catch (error: any) {
     console.error("Signup Error:", error);
     return NextResponse.json(

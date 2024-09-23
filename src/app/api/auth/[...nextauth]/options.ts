@@ -23,7 +23,7 @@ export const authOptions:NextAuthOptions={
                     if(!user.isVerified){
                         throw new Error("Verify your email")
                     }
-                    const isValid = await bcryptjs.compare(credentials .password, user.password);
+                    const isValid = await bcryptjs.compare(credentials.password, user.password);
                     if (!isValid) {
                         throw new Error('Invalid email or password');
                         }
@@ -42,6 +42,10 @@ export const authOptions:NextAuthOptions={
         async session({ session, token }) {
             if(token){
                 session.user._id=token._id
+                session.user.isVerfied=token.isVerified
+                session.user.isAcceptingMessage=token.isAcceptingMessages
+                session.user.username=token.username
+
             }
             return session
           },
