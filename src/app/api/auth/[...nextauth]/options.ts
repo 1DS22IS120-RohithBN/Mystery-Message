@@ -16,8 +16,13 @@ export const authOptions:NextAuthOptions={
               async authorize(credentials:any, req):Promise<any> {
                 await dbConnect();
                 try {
-                    const user = await UserModel.findOne({ email: credentials.identifier.email });
-                    if (!user) {
+                    const user = await UserModel.findOne({
+                        $or: [
+                          { email: credentials.identifier },
+                          { username: credentials.identifier },
+                        ],
+                      });                   
+                     if (!user) {
                         throw new Error('Invalid email or password');
                     }
                     if(!user.isVerified){
@@ -27,6 +32,7 @@ export const authOptions:NextAuthOptions={
                     if (!isValid) {
                         throw new Error('Invalid email or password');
                         }
+                        console.log("sign in user:",user)
                         return user;
                     
                 } catch (error:any) {
@@ -40,24 +46,29 @@ export const authOptions:NextAuthOptions={
     ],
     callbacks: {
         async session({ session, token }) {
-            if(token){
-                session.user._id=token._id
-                session.user.isVerfied=token.isVerified
-                session.user.isAcceptingMessage=token.isAcceptingMessages
-                session.user.username=token.username
-
+            console.log("Session token:", token);
+            if (token) {
+                session.user._id = token._id; // This should be set from the JWT callback
+                session.user.isVerified = token.isVerified; // Ensure the correct spelling
+                session.user.isAcceptingMessage = token.isAcceptingMessage // Ensure this property exists in token
+                session.user.username = token.username;
             }
-            return session
-          },
-          async jwt({ token, user, }) {
-            if(user){
-                token._id=user._id?.toString();
-                token.isVerfied=user.isVerified;
-                token.isAcceptingMessages=user.isAcceptingMessages;
-                token.username=user.username;
+            console.log("Session:", session);
+            return session;
+        },
+          async jwt({ token, user }) {
+            console.log("JWT token before:", token);
+            if (user) {
+                // User is defined only at sign-in
+                token._id = user._id?.toString();
+                token.isVerified = user.isVerified;
+                token.isAcceptingMessage= user.isAcceptingMessage;
+                token.username = user.username;
             }
-            return token
-          }
+            console.log("JWT token after:", token);
+            return token;
+        }
+        
     },
     pages:{
         signIn:'/sign-in'

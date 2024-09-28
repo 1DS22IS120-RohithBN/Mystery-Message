@@ -1,17 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 export { default } from 'next-auth/middleware';
+import { authOptions } from './app/api/auth/[...nextauth]/options';
+import { getServerSession } from 'next-auth';
 
 export const config = {
   matcher: ['/dashboard/:path*', '/sign-in', '/sign-up', '/', '/verify/:path*'],
 };
 
 export async function middleware(request: NextRequest) {
-  const token = await getToken({ req: request });
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET_KEY });
+  console.log("middleware token:", token);
+
+  // Log the current session to see if it exists
+  //const session = await getServerSession(authOptions);
+  //console.log("middleware session:", session);
+
   const url = request.nextUrl;
 
-  // Redirect to dashboard if the user is already authenticated
-  // and trying to access sign-in, sign-up, or home page
   if (
     token &&
     (url.pathname.startsWith('/sign-in') ||
