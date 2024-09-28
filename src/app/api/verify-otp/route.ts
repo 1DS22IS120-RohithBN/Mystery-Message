@@ -23,7 +23,7 @@ export async function POST(request:Request){
             await user.save()
             return Response.json({
                 success:true,
-                message:"Verification successful"
+                message:"Your Verification successful"
                 })
                 }
             if(verifyValid && !isCodeNotExpired){

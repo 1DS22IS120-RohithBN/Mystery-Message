@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useDebounceValue } from 'usehooks-ts';
+import { useDebounceValue,useDebounceCallback } from 'usehooks-ts';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { signUpSchema } from "@/schemas/signUpSchema";
@@ -14,19 +14,22 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Input } from "@/components/ui/input";
 import { AxiosError } from 'axios';
 import Link from "next/link";
-import { string, z } from 'zod';
+import { z } from 'zod';
 import { APIresponse } from '@/types/APIresponse';
 
-
 const Page = () => {
+  // Separate local state for managing the username
   const [username, setUsername] = useState('');
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [usernameMessage, setUsernameMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const debouncedUsername = useDebounceValue(username, 3000);
+
+  // Debounce the username input to avoid sending multiple requests
+  const debounced = useDebounceCallback(setUsername, 500); 
   const { toast } = useToast();
   const router = useRouter();
 
+  // React Hook Form setup
   const form = useForm({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -44,7 +47,7 @@ const Page = () => {
         title: "Sign up successful",
         description: response.data.message,
       });
-      router.replace(`/verify/${username}`);
+      router.push(`/verify/${username}`);
     } catch (error) {
       const axiosError = error as AxiosError<APIresponse>;
       toast({
@@ -57,16 +60,15 @@ const Page = () => {
     }
   };
 
+  // Effect for checking if the username is unique
   useEffect(() => {
     const checkUsernameUnique = async () => {
-      console.log("username",username)
-      console.log('Debounced Username:', debouncedUsername);
-      const bouncedusername=debouncedUsername[0]
-      if (debouncedUsername) {
+      if (username) {
         setIsCheckingUsername(true);
         setUsernameMessage('');
         try {
-          const response = await axios.get(`/api/check-username-unique?username=${bouncedusername}`);
+          console.log(`url= /api/check-username-unique?username=${username}`)
+          const response = await axios.get(`/api/check-username-unique?username=${username}`);
           setUsernameMessage(response.data.message);
         } catch (error) {
           const axiosError = error as AxiosError<APIresponse>;
@@ -76,8 +78,12 @@ const Page = () => {
         }
       }
     };
-    checkUsernameUnique();
-  }, [debouncedUsername]);
+
+    // Only trigger this effect if there is a non-empty debounced username value
+    if (username) {
+      checkUsernameUnique();
+    }
+  }, [username]); // Only trigger when the debouncedUsername changes
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-800">
@@ -99,8 +105,9 @@ const Page = () => {
                   <Input
                     {...field}
                     onChange={(e) => {
-                      field.onChange(e);
-                      setUsername(e.target.value);
+                      // Update both form's field and local username state
+                      field.onChange(e); 
+                      debounced(e.target.value); // Track the username change separately
                     }}
                   />
                   {isCheckingUsername && <Loader2 className="animate-spin" />}
