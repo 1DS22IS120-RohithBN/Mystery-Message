@@ -18,12 +18,14 @@ export async function GET(request: Request) {
   }
 
   const user: User = session.user;
-  const userId = new mongoose.Types.ObjectId(user.id);
+  console.log('Session user',user)
+  const userId = new mongoose.Types.ObjectId(user._id);
+
 
   try {
     const foundUser = await UserModel.aggregate([
       {
-        $match: { _id: userId } // Use _id as ObjectId for MongoDB matching
+        $match: { _id: user._id} // Use _id as ObjectId for MongoDB matching
       },
       {
         $unwind: "$messages"
