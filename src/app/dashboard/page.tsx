@@ -14,11 +14,13 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, RefreshCcw } from "lucide-react";
 import { MessageCard } from "@/components/MessageCard";
+import { useRouter } from "next/navigation";
 
 const Dashboard = () => {
   const [messages,setMessages]=useState<Message[]>([])
   const [isLoading,setIsLoading]=useState(false)
   const [isSwitchLoading,setIsSwitchLoading]=useState(false)
+  const router=useRouter()
   const form=useForm({
     resolver:zodResolver(acceptMessagesSchema),
   })
@@ -37,6 +39,7 @@ const Dashboard = () => {
     try {
       const response = await axios.get<APIresponse>('/api/acceptMessage');
       setValue('acceptMessage', response.data.isAcceptingMessage);
+      console.log("fetch acceptM value",acceptMessage)
     } catch (error) {
       const axiosError = error as AxiosError<APIresponse>;
       toast({
@@ -80,11 +83,14 @@ const Dashboard = () => {
   const handleSwitchChange=async()=>{
     try{
       const response = await axios.post<APIresponse>('/api/acceptMessage',{acceptMessage:!acceptMessage});
-      setValue('acceptMessages', !acceptMessage);
+      setValue('acceptMessage', !acceptMessage);
+      console.log("current accept Message value",acceptMessage)
       toast({
         title: response.data.message,
         variant: 'default',
       });
+      router.push('/dashboard')
+
     } catch (error) {
       const axiosError = error as AxiosError<APIresponse>;
       toast({
@@ -173,7 +179,7 @@ const Dashboard = () => {
         {messages.length > 0 ? (
           messages.map((message, index) => (
             <MessageCard
-            key={index}
+            key={message._id}
               message={message}
               onMessageDelete={handleDeleteMessage}
             />

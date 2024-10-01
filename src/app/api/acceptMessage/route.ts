@@ -39,6 +39,7 @@ export async function POST(request:Request){
 export async function GET(request:Request){
     await dbConnect();
     const session = await getServerSession(authOptions)
+    console.log("accept get message session",session)
     
     const user:User=session?.user
     if(!session || !session.user){

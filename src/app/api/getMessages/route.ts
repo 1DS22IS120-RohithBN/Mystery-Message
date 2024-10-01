@@ -20,23 +20,22 @@ export async function GET(request: Request) {
   const user: User = session.user;
   console.log('Session user',user)
   const userId = new mongoose.Types.ObjectId(user._id);
+  const userExists = await UserModel.findById(userId);
+  console.log("user exists",userExists)
+if (!userExists) {
+  console.log("cannot find userId")
+    return new Response(JSON.stringify({ success: false, message: "User not found" }), { status: 404 });
+}
 
 
   try {
     const foundUser = await UserModel.aggregate([
-      {
-        $match: { _id: user._id} // Use _id as ObjectId for MongoDB matching
-      },
-      {
-        $unwind: "$messages"
-      },
-      {
-        $sort: { "messages.createdAt": -1 }
-      },
-      {
-        $group: { _id: "$_id", messages: { $push: "$messages" } }
-      }
-    ]);
+      { $match: { _id: userId } },
+      { $unwind: '$messages' },
+      { $sort: { 'messages.createdAt': -1 } },
+      { $group: { _id: '$_id', messages: { $push: '$messages' } } },
+    ]).exec();
+  
 
     if (!foundUser || foundUser.length === 0) {
       return new Response(JSON.stringify({

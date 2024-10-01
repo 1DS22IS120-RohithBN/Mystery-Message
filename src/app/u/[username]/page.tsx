@@ -31,8 +31,9 @@ const page = () => {
       const onSubmit = async (data: z.infer<typeof messagesSchema>) => {
         setIsLoading(true);
         try {
+          console.log("username and content",username,data)
           const response = await axios.post<APIresponse>('/api/sendMessage', {
-            ...data,
+            content:data.content,
             username,
           });
     
@@ -40,7 +41,6 @@ const page = () => {
             title: response.data.message,
             variant: 'default',
           });
-          form.reset({ ...form.getValues(), content: '' });
         } catch (error) {
           const axiosError = error as AxiosError<APIresponse>;
           toast({

@@ -10,7 +10,6 @@ export const config = {
 
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET_KEY });
-  console.log("middleware token:", token);
 
   // Log the current session to see if it exists
   //const session = await getServerSession(authOptions);

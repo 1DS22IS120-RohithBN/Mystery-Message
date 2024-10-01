@@ -46,18 +46,15 @@ export const authOptions:NextAuthOptions={
     ],
     callbacks: {
         async session({ session, token }) {
-            console.log("Session token:", token);
             if (token) {
                 session.user._id = token._id; // This should be set from the JWT callback
                 session.user.isVerified = token.isVerified; // Ensure the correct spelling
                 session.user.isAcceptingMessage = token.isAcceptingMessage // Ensure this property exists in token
                 session.user.username = token.username;
             }
-            console.log("Session:", session);
             return session;
         },
           async jwt({ token, user }) {
-            console.log("JWT token before:", token);
             if (user) {
                 // User is defined only at sign-in
                 token._id = user._id?.toString();
@@ -65,7 +62,6 @@ export const authOptions:NextAuthOptions={
                 token.isAcceptingMessage= user.isAcceptingMessage;
                 token.username = user.username;
             }
-            console.log("JWT token after:", token);
             return token;
         }
         
