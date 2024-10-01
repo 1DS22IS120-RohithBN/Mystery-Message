@@ -28,7 +28,7 @@ const Dashboard = () => {
   const {register,handleSubmit,setValue,watch}=form
   const acceptMessage=watch('acceptMessage')
 
-  const handleDeleteMessage = (messageId: any) => {
+  const handleDeleteMessage = (messageId: string) => {
     setMessages(messages.filter((message) => message._id !== messageId));
   };
   const {data:session}=useSession();

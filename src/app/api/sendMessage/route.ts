@@ -30,6 +30,13 @@ export async function POST(request: Request) {
 
         // Log the user object
         console.log("User object before saving:", user);
+
+        if(!user.isAcceptingMessage){
+            return Response.json({
+                message: 'User is not accepting messages',
+                success: false,
+            })
+        }
         
 const newMessage={ content:content, createdAt: new Date() };
 console.log("type of content", typeof  content);

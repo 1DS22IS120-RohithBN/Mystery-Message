@@ -39,6 +39,7 @@ import {
             const response = await axios.delete<APIresponse>(
               `/api/deleteMessages/${message._id}`
             );
+            console.log("AFTER DELETE REQUEST")
             toast({
               title: response.data.message,
             });
