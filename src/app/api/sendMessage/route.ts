@@ -7,12 +7,10 @@ export async function POST(request: Request) {
     await dbConnect();
     const { username, content } = await request.json();
 
-    // Log incoming data
     console.log("Incoming data:", { username, content });
 
-    // Validate content
     if (!content || typeof content !== 'string') {
-        console.log("not sstring")
+        console.log("Content is not a string or is empty");
         return Response.json(
             { message: 'Content cannot be empty or invalid', success: false },
             { status: 400 }
@@ -28,20 +26,23 @@ export async function POST(request: Request) {
             );
         }
 
-        // Log the user object
         console.log("User object before saving:", user);
 
-        if(!user.isAcceptingMessage){
+        if (!user.isAcceptingMessage) {
             return Response.json({
                 message: 'User is not accepting messages',
                 success: false,
-            })
+            });
         }
-        
-const newMessage={ content:content, createdAt: new Date() };
-console.log("type of content", typeof  content);
 
-        console.log("New Message:", { content:content, createdAt: new Date() });
+        // Create new message
+        const newMessage = {
+            _id: new mongoose.Types.ObjectId().toString(), // Explicitly set _id if required
+            content,
+            createdAt: new Date()
+        };
+        
+        console.log("New Message:", newMessage);
 
         // Ensure messages is an array
         if (!Array.isArray(user.messages)) {

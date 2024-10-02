@@ -21,11 +21,18 @@ export async function DELETE(request: Request, { params }: { params: { messageId
   console.log("Message ID:", messageId);
 
   try {
+    const replyUser = await UserModel.findOne({ username: user?.username });
+
+    // Log messages to check their structure
+    console.log("User messages before deletion:", JSON.stringify(replyUser?.messages, null, 2));
+
+    // Perform the deletion using the string ID
     const updateResult = await UserModel.updateOne(
       { username: user.username },
-      { $pull: { messages: { _id: messageId } } }
+      { $pull: { messages: { _id: messageId } } } // No need for ObjectId conversion
     );
 
+    console.log("Update result:", updateResult);
     if (updateResult.modifiedCount === 0) {
       return Response.json(
         { message: 'Message not found or already deleted', success: false },
